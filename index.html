@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#050a0f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CryptoJournal">
+<meta name="description" content="Personal Crypto Trading Journal & P&L Monitor">
+<link rel="manifest" href="manifest.json">
+<title>CryptoJournal</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050a0f;
+    --panel: #0b1520;
+    --panel2: #0f1e2d;
+    --border: #1a3a5c;
+    --accent: #00d4ff;
+    --accent2: #0099cc;
+    --green: #00ff88;
+    --green-dim: #004422;
+    --red: #ff3355;
+    --red-dim: #440011;
+    --text: #c8dff0;
+    --text-dim: #5a8ab0;
+    --gold: #ffd700;
+    --mono: 'Share Tech Mono', monospace;
+    --sans: 'Rajdhani', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ═══════════════════════════════════
+     LOGIN SCREEN
+  ═══════════════════════════════════ */
+  #loginScreen {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+    padding: 20px;
+  }
+
+  #loginScreen::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+
+  .login-box {
+    position: relative;
+    z-index: 1;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px 36px;
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+    box-shadow: 0 0 60px rgba(0,212,255,0.08), 0 0 120px rgba(0,212,255,0.04);
+  }
+
+  .login-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    border-radius: 16px 16px 0 0;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  }
+
+  .login-logo {
+    width: 64px; height: 64px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px;
+    margin: 0 auto 20px;
+    box-shadow: 0 0 30px rgba(0,212,255,0.4);
+    animation: logoPulse 3s ease-in-out infinite;
+  }
+
+  @keyframes logoPulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(0,212,255,0.3); }
+    50% { box-shadow: 0 0 40px rgba(0,212,255,0.6); }
+  }
+
+  .login-title {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: #fff;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .login-sub {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 3px;
+    margin-bottom: 32px;
+  }
+
+  .login-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-align: left;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .pin-display {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin: 16px 0 24px;
+  }
+
+  .pin-dot {
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    background: transparent;
+    transition: all 0.2s;
+  }
+
+  .pin-dot.filled {
+    background: var(--accent);
+    border-color: var(--accent);
+    box-shadow: 0 0 10px rgba(0,212,255,0.5);
+  }
+
+  .pin-dot.error {
+    background: var(--red);
+    border-color: var(--red);
+    animation: shake 0.4s ease;
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+  }
+
+  .numpad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 8px;
+  }
+
+  .num-btn {
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 20px;
+    font-weight: 700;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.15s;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+
+  .num-btn:hover { background: rgba(0,212,255,0.08); border-color: var(--accent); }
+  .num-btn:active { transform: scale(0.93); background: rgba(0,212,255,0.15); }
+
+  .num-btn.del {
+    color: var(--red);
+    font-size: 16px;
+    border-color: rgba(255,51,85,0.3);
+  }
+
+  .num-btn.del:hover { border-color: var(--red); background: var(--red-dim); }
+
+  .num-btn.zero { grid-column: 2; }
+
+  .login-error {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--red);
+    letter-spacing: 1px;
+    min-height: 18px;
+    margin-top: 12px;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .login-error.show { opacity: 1; }
+
+  .setup-mode-hint {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--gold);
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+    padding: 8px 12px;
+    background: rgba(255,215,0,0.06);
+    border: 1px solid rgba(255,215,0,0.2);
+    border-radius: 6px;
+    display: none;
+  }
+
+  .setup-mode-hint.show { display: block; }
+
+  /* ═══════════════════════════════════
+     LOCK BUTTON IN HEADER
+  ═══════════════════════════════════ */
+  .lock-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    border-radius: 7px;
+    padding: 7px 14px;
+    font-family: var(--mono);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .lock-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ═══════════════════════════════════
+     MAIN APP (hidden until logged in)
+  ═══════════════════════════════════ */
+  #app { display: none; }
+
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 30px 20px;
+  }
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .logo-icon {
+    width: 44px; height: 44px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    box-shadow: 0 0 20px rgba(0,212,255,0.3);
+  }
+
+  .logo-text {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #fff;
+    text-transform: uppercase;
+  }
+
+  .logo-sub {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 3px;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  .header-date {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-dim);
+    text-align: right;
+  }
+
+  /* Summary Cards */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+  }
+
+  .card.green-card::before { background: linear-gradient(90deg, var(--green), transparent); }
+  .card.red-card::before { background: linear-gradient(90deg, var(--red), transparent); }
+  .card.gold-card::before { background: linear-gradient(90deg, var(--gold), transparent); }
+
+  .card-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .card-value {
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .card-value.green { color: var(--green); }
+  .card-value.red { color: var(--red); }
+  .card-value.gold { color: var(--gold); }
+
+  .card-sub {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+
+  /* Form Panel */
+  .form-panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px 24px;
+    margin-bottom: 28px;
+  }
+
+  .form-title {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 18px;
+    font-family: var(--mono);
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+    align-items: end;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  input, select {
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    padding: 9px 12px;
+    font-family: var(--mono);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+    -webkit-appearance: none;
+  }
+
+  input:focus, select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(0,212,255,0.1);
+  }
+
+  select option { background: var(--panel2); }
+
+  .btn-add {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #000;
+    border: none;
+    border-radius: 7px;
+    padding: 10px 22px;
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+    text-transform: uppercase;
+    white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .btn-add:hover { opacity: 0.85; }
+  .btn-add:active { transform: scale(0.97); }
+
+  /* Table */
+  .table-panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .table-header-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .table-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 3px;
+  }
+
+  .btn-clear {
+    background: transparent;
+    border: 1px solid var(--red);
+    color: var(--red);
+    border-radius: 5px;
+    padding: 5px 14px;
+    font-family: var(--mono);
+    font-size: 11px;
+    cursor: pointer;
+    transition: background 0.2s;
+    letter-spacing: 1px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .btn-clear:hover { background: var(--red-dim); }
+
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  thead th {
+    background: var(--panel2);
+    padding: 11px 14px;
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid rgba(26,58,92,0.5);
+    transition: background 0.15s;
+  }
+
+  tbody tr:hover { background: rgba(0,212,255,0.04); }
+  tbody tr:last-child { border-bottom: none; }
+
+  td {
+    padding: 12px 14px;
+    font-family: var(--mono);
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .coin-badge {
+    background: rgba(0,212,255,0.1);
+    border: 1px solid rgba(0,212,255,0.2);
+    border-radius: 4px;
+    padding: 2px 7px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 1px;
+  }
+
+  .direction-badge {
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    display: inline-block;
+  }
+
+  .dir-buy { background: var(--green-dim); color: var(--green); border: 1px solid rgba(0,255,136,0.3); }
+  .dir-sell { background: var(--red-dim); color: var(--red); border: 1px solid rgba(255,51,85,0.3); }
+
+  .result-cell {
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .result-profit {
+    background: var(--green-dim);
+    color: var(--green);
+    border: 1px solid rgba(0,255,136,0.3);
+    animation: glow 2.5s infinite;
+  }
+
+  .result-loss {
+    background: var(--red-dim);
+    color: var(--red);
+    border: 1px solid rgba(255,51,85,0.3);
+  }
+
+  .pct-cell { font-weight: 700; }
+  .pct-pos { color: var(--green); }
+  .pct-neg { color: var(--red); }
+
+  .delete-btn {
+    background: none;
+    border: 1px solid rgba(255,51,85,0.3);
+    color: var(--red);
+    border-radius: 4px;
+    padding: 3px 8px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background 0.2s;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .delete-btn:hover { background: var(--red-dim); }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 1px;
+  }
+
+  .empty-icon { font-size: 40px; margin-bottom: 16px; }
+
+  @keyframes glow {
+    0%, 100% { box-shadow: 0 0 4px rgba(0,255,136,0.3); }
+    50% { box-shadow: 0 0 12px rgba(0,255,136,0.6); }
+  }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--panel); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* Change PIN section */
+  .change-pin-panel {
+    background: var(--panel);
+    border: 1px solid rgba(255,215,0,0.3);
+    border-radius: 12px;
+    padding: 22px 24px;
+    margin-bottom: 28px;
+    display: none;
+  }
+
+  .change-pin-panel.open { display: block; }
+
+  .change-pin-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--gold);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .pin-input-row {
+    display: flex;
+    gap: 14px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+  }
+
+  .pin-input-row .field { min-width: 180px; }
+
+  /* Install banner for mobile */
+  .install-banner {
+    display: none;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--panel);
+    border-top: 1px solid var(--border);
+    padding: 14px 20px;
+    z-index: 500;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .install-banner.show { display: flex; }
+
+  .install-banner-text {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+  }
+
+  .install-banner-text strong { color: var(--accent); }
+
+  .install-btns { display: flex; gap: 8px; }
+
+  .btn-install {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #000;
+    border: none;
+    border-radius: 6px;
+    padding: 7px 16px;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 1px;
+  }
+
+  .btn-dismiss {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    border-radius: 6px;
+    padding: 7px 12px;
+    font-family: var(--mono);
+    font-size: 11px;
+    cursor: pointer;
+    letter-spacing: 1px;
+  }
+
+  @media (max-width: 600px) {
+    .form-grid { grid-template-columns: 1fr 1fr; }
+    .login-box { padding: 30px 20px; }
+    .num-btn { padding: 14px; font-size: 18px; }
+    .wrapper { padding: 20px 14px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════
+     LOGIN SCREEN
+═══════════════════════════════════ -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">₿</div>
+    <div class="login-title">CryptoJournal</div>
+    <div class="login-sub">Trade Tracker &amp; P&amp;L Monitor</div>
+
+    <div class="setup-mode-hint" id="setupHint">
+      // First time? Set a 4-digit PIN to secure your journal.
+    </div>
+    <div class="setup-mode-hint" id="confirmHint" style="color:var(--accent);border-color:rgba(0,212,255,0.3);background:rgba(0,212,255,0.05);">
+      // Confirm your PIN one more time.
+    </div>
+
+    <span class="login-label" id="pinLabel">// Enter PIN</span>
+    <div class="pin-display">
+      <div class="pin-dot" id="dot0"></div>
+      <div class="pin-dot" id="dot1"></div>
+      <div class="pin-dot" id="dot2"></div>
+      <div class="pin-dot" id="dot3"></div>
+    </div>
+
+    <div class="numpad">
+      <button class="num-btn" onclick="numPress('1')">1</button>
+      <button class="num-btn" onclick="numPress('2')">2</button>
+      <button class="num-btn" onclick="numPress('3')">3</button>
+      <button class="num-btn" onclick="numPress('4')">4</button>
+      <button class="num-btn" onclick="numPress('5')">5</button>
+      <button class="num-btn" onclick="numPress('6')">6</button>
+      <button class="num-btn" onclick="numPress('7')">7</button>
+      <button class="num-btn" onclick="numPress('8')">8</button>
+      <button class="num-btn" onclick="numPress('9')">9</button>
+      <button class="num-btn zero" onclick="numPress('0')">0</button>
+      <button class="num-btn del" onclick="numDel()">⌫</button>
+    </div>
+
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     MAIN APP
+═══════════════════════════════════ -->
+<div id="app">
+<div class="wrapper">
+
+  <header>
+    <div class="logo">
+      <div class="logo-icon">₿</div>
+      <div>
+        <div class="logo-text">CryptoJournal</div>
+        <div class="logo-sub">Trade Tracker &amp; P&amp;L Monitor</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="header-date" id="headerDate"></div>
+      <button class="lock-btn" onclick="lockApp()">🔒 Lock</button>
+      <button class="lock-btn" style="border-color:rgba(255,215,0,0.3);color:var(--gold);" onclick="toggleChangePin()">⚙ PIN</button>
+    </div>
+  </header>
+
+  <!-- Change PIN Panel -->
+  <div class="change-pin-panel" id="changePinPanel">
+    <div class="change-pin-title">// Change PIN</div>
+    <div class="pin-input-row">
+      <div class="field">
+        <label>Current PIN</label>
+        <input type="password" id="oldPin" maxlength="4" placeholder="••••" inputmode="numeric" pattern="[0-9]*">
+      </div>
+      <div class="field">
+        <label>New PIN (4 digits)</label>
+        <input type="password" id="newPin" maxlength="4" placeholder="••••" inputmode="numeric" pattern="[0-9]*">
+      </div>
+      <div class="field">
+        <label>Confirm New PIN</label>
+        <input type="password" id="confirmPin" maxlength="4" placeholder="••••" inputmode="numeric" pattern="[0-9]*">
+      </div>
+      <div class="field" style="justify-content:flex-end;">
+        <button class="btn-add" style="background:linear-gradient(135deg,var(--gold),#cc9900);" onclick="changePin()">✓ Update PIN</button>
+      </div>
+    </div>
+    <div id="pinChangeMsg" style="font-family:var(--mono);font-size:11px;margin-top:12px;min-height:16px;"></div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="summary-grid">
+    <div class="card">
+      <div class="card-label">Opening Balance</div>
+      <div class="card-value gold" id="summaryOpening">$0.00</div>
+      <div class="card-sub">Initial capital</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Current Balance</div>
+      <div class="card-value" id="summaryCurrent">$0.00</div>
+      <div class="card-sub">After all trades</div>
+    </div>
+    <div class="card green-card">
+      <div class="card-label">Total Profit</div>
+      <div class="card-value green" id="summaryProfit">$0.00</div>
+      <div class="card-sub" id="summaryWins">0 winning trades</div>
+    </div>
+    <div class="card red-card">
+      <div class="card-label">Total Loss</div>
+      <div class="card-value red" id="summaryLoss">$0.00</div>
+      <div class="card-sub" id="summaryLosses">0 losing trades</div>
+    </div>
+    <div class="card gold-card">
+      <div class="card-label">Net P&amp;L</div>
+      <div class="card-value" id="summaryNet">$0.00</div>
+      <div class="card-sub" id="summaryPct">0.00% overall</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Total Trades</div>
+      <div class="card-value" id="summaryTrades">0</div>
+      <div class="card-sub" id="summaryWinRate">Win rate: —</div>
+    </div>
+  </div>
+
+  <!-- Starting Capital Setup -->
+  <div class="form-panel" id="setupPanel" style="display:none; border-color: var(--gold);">
+    <div class="form-title" style="color:var(--gold)">// Set Starting Capital — One Time Only</div>
+    <div style="font-size:13px; color:var(--text-dim); margin-bottom:16px; font-family:var(--mono);">
+      Enter your initial trading balance. This carries forward automatically after every trade.
+    </div>
+    <div style="display:flex; gap:14px; align-items:flex-end; flex-wrap:wrap;">
+      <div class="field" style="min-width:220px;">
+        <label>Starting Balance ($)</label>
+        <input type="number" id="startingCapital" placeholder="e.g. 1000.00" min="0" step="0.01" inputmode="decimal">
+      </div>
+      <button class="btn-add" style="background: linear-gradient(135deg, var(--gold), #cc9900);" onclick="setStartingCapital()">✓ Set Capital</button>
+    </div>
+  </div>
+
+  <!-- Add Trade Form -->
+  <div class="form-panel" id="tradeFormPanel">
+    <div class="form-title">// Add New Trade</div>
+    <div class="form-grid">
+      <div class="field">
+        <label>Date</label>
+        <input type="date" id="tradeDate">
+      </div>
+      <div class="field">
+        <label>Coin Name</label>
+        <input type="text" id="tradeCoin" placeholder="e.g. BTC" maxlength="12">
+      </div>
+      <div class="field">
+        <label>Opening Balance ($)</label>
+        <input type="number" id="tradeOpenBal" readonly tabindex="-1"
+          style="background:rgba(0,212,255,0.05); border-color:var(--accent); color:var(--accent); cursor:not-allowed;">
+        <span style="font-family:var(--mono);font-size:9px;color:var(--text-dim);letter-spacing:1px;">↑ Auto-filled from last trade</span>
+      </div>
+      <div class="field">
+        <label>Direction</label>
+        <select id="tradeDir">
+          <option value="Buy">Buy (Long)</option>
+          <option value="Sell">Sell (Short)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Trade Amount ($)</label>
+        <input type="number" id="tradeAmount" placeholder="e.g. 200" min="0" step="0.01" inputmode="decimal">
+      </div>
+      <div class="field">
+        <label>Result (+ Profit / - Loss)</label>
+        <input type="number" id="tradeResult" placeholder="e.g. 50 or -30" step="0.01" inputmode="decimal">
+      </div>
+      <div class="field">
+        <button class="btn-add" onclick="addTrade()">+ Log Trade</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Trade Table -->
+  <div class="table-panel">
+    <div class="table-header-bar">
+      <div class="table-title">// Trade Log</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn-clear" style="border-color:var(--gold);color:var(--gold);" onclick="resetCapital()">⟳ Reset Capital</button>
+        <button class="btn-clear" onclick="clearAll()">✕ Clear Trades</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Date</th>
+            <th>Coin</th>
+            <th>Opening Bal.</th>
+            <th>Direction</th>
+            <th>Trade Amount</th>
+            <th>Result</th>
+            <th>New Balance</th>
+            <th>% Gain/Loss</th>
+            <th>% of Total P&L</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="tradeBody">
+          <tr>
+            <td colspan="11">
+              <div class="empty-state">
+                <div class="empty-icon">📊</div>
+                No trades logged yet. Add your first trade above.
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- PWA Install Banner -->
+<div class="install-banner" id="installBanner">
+  <div class="install-banner-text">
+    📲 Add <strong>CryptoJournal</strong> to your home screen for quick mobile access.
+  </div>
+  <div class="install-btns">
+    <button class="btn-install" id="installBtn">Install</button>
+    <button class="btn-dismiss" onclick="dismissInstall()">✕</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  PIN / LOGIN SYSTEM
+// ═══════════════════════════════════════════════════════════
+const HASH_ITERS = 10000;
+let pinBuffer = '';
+let pinStep = 'login'; // login | setup | confirm
+let tempPin = '';
+let isLoggedIn = false;
+
+async function hashPin(pin) {
+  const encoder = new TextEncoder();
+  let data = encoder.encode(pin + 'cj_salt_2024');
+  for (let i = 0; i < HASH_ITERS; i++) {
+    data = await crypto.subtle.digest('SHA-256', data);
+  }
+  return Array.from(new Uint8Array(data)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function getSavedHash() { return localStorage.getItem('cj_pin_hash'); }
+function saveHash(h)    { localStorage.setItem('cj_pin_hash', h); }
+
+function updateDots(buf, error) {
+  for (let i = 0; i < 4; i++) {
+    const d = document.getElementById('dot' + i);
+    d.className = 'pin-dot';
+    if (error) d.classList.add('error');
+    else if (i < buf.length) d.classList.add('filled');
+  }
+}
+
+function showError(msg) {
+  const el = document.getElementById('loginError');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+function numPress(n) {
+  if (pinBuffer.length >= 4) return;
+  pinBuffer += n;
+  updateDots(pinBuffer, false);
+  if (pinBuffer.length === 4) {
+    setTimeout(() => handlePinComplete(), 120);
+  }
+}
+
+function numDel() {
+  if (pinBuffer.length === 0) return;
+  pinBuffer = pinBuffer.slice(0, -1);
+  updateDots(pinBuffer, false);
+}
+
+async function handlePinComplete() {
+  if (pinStep === 'login') {
+    const hash = await hashPin(pinBuffer);
+    if (hash === getSavedHash()) {
+      unlockApp();
+    } else {
+      updateDots(pinBuffer, true);
+      showError('// Incorrect PIN');
+      setTimeout(() => { pinBuffer = ''; updateDots('', false); }, 600);
+    }
+  } else if (pinStep === 'setup') {
+    tempPin = pinBuffer;
+    pinBuffer = '';
+    pinStep = 'confirm';
+    document.getElementById('pinLabel').textContent = '// Confirm PIN';
+    document.getElementById('setupHint').classList.remove('show');
+    document.getElementById('confirmHint').classList.add('show');
+    updateDots('', false);
+  } else if (pinStep === 'confirm') {
+    if (pinBuffer === tempPin) {
+      const hash = await hashPin(pinBuffer);
+      saveHash(hash);
+      pinBuffer = ''; tempPin = '';
+      pinStep = 'login';
+      unlockApp();
+    } else {
+      updateDots(pinBuffer, true);
+      showError('// PINs do not match. Try again.');
+      setTimeout(() => {
+        pinBuffer = ''; tempPin = '';
+        pinStep = 'setup';
+        document.getElementById('pinLabel').textContent = '// Set PIN';
+        document.getElementById('confirmHint').classList.remove('show');
+        document.getElementById('setupHint').classList.add('show');
+        updateDots('', false);
+      }, 700);
+    }
+  }
+}
+
+function unlockApp() {
+  isLoggedIn = true;
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  initApp();
+}
+
+function lockApp() {
+  isLoggedIn = false;
+  pinBuffer = '';
+  pinStep = 'login';
+  document.getElementById('pinLabel').textContent = '// Enter PIN';
+  document.getElementById('setupHint').classList.remove('show');
+  document.getElementById('confirmHint').classList.remove('show');
+  updateDots('', false);
+  document.getElementById('loginError').classList.remove('show');
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+}
+
+async function changePin() {
+  const oldVal = document.getElementById('oldPin').value.trim();
+  const newVal = document.getElementById('newPin').value.trim();
+  const confVal = document.getElementById('confirmPin').value.trim();
+  const msg = document.getElementById('pinChangeMsg');
+
+  if (oldVal.length !== 4 || newVal.length !== 4 || confVal.length !== 4) {
+    msg.style.color = 'var(--red)'; msg.textContent = '// All fields must be exactly 4 digits.'; return;
+  }
+  if (newVal !== confVal) {
+    msg.style.color = 'var(--red)'; msg.textContent = '// New PINs do not match.'; return;
+  }
+
+  const oldHash = await hashPin(oldVal);
+  if (oldHash !== getSavedHash()) {
+    msg.style.color = 'var(--red)'; msg.textContent = '// Current PIN is incorrect.'; return;
+  }
+
+  const newHash = await hashPin(newVal);
+  saveHash(newHash);
+  msg.style.color = 'var(--green)'; msg.textContent = '// PIN updated successfully.';
+  document.getElementById('oldPin').value = '';
+  document.getElementById('newPin').value = '';
+  document.getElementById('confirmPin').value = '';
+  setTimeout(() => { msg.textContent = ''; toggleChangePin(false); }, 2000);
+}
+
+function toggleChangePin(force) {
+  const panel = document.getElementById('changePinPanel');
+  const open = force !== undefined ? force : !panel.classList.contains('open');
+  if (open) panel.classList.add('open'); else panel.classList.remove('open');
+}
+
+// Keyboard support for login
+document.addEventListener('keydown', (e) => {
+  if (isLoggedIn) return;
+  if (e.key >= '0' && e.key <= '9') numPress(e.key);
+  if (e.key === 'Backspace') numDel();
+});
+
+// Init login mode
+function initLoginScreen() {
+  if (!getSavedHash()) {
+    pinStep = 'setup';
+    document.getElementById('pinLabel').textContent = '// Set a 4-digit PIN';
+    document.getElementById('setupHint').classList.add('show');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  TRADING JOURNAL LOGIC
+// ═══════════════════════════════════════════════════════════
+let trades = [];
+let startingCapital = 0;
+
+function initApp() {
+  trades = JSON.parse(localStorage.getItem('cryptoTrades') || '[]');
+  startingCapital = parseFloat(localStorage.getItem('startingCapital') || '0');
+
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('tradeDate').value = today;
+
+  document.getElementById('headerDate').innerHTML =
+    new Date().toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' }) +
+    '<br><span style="color:var(--accent)">LIVE TRACKER</span>';
+
+  if (!startingCapital) {
+    document.getElementById('setupPanel').style.display = 'block';
+  } else {
+    refreshOpeningBalanceField();
+  }
+  render();
+}
+
+function fmt(n) {
+  return '$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 });
+}
+
+function fmtSigned(n) {
+  return (n >= 0 ? '+$' : '-$') + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 });
+}
+
+function getCurrentOpeningBalance() {
+  if (trades.length === 0) return startingCapital;
+  const last = trades[trades.length - 1];
+  return last.openBal + last.result;
+}
+
+function refreshOpeningBalanceField() {
+  const bal = getCurrentOpeningBalance();
+  const field = document.getElementById('tradeOpenBal');
+  field.value = bal > 0 ? bal.toFixed(2) : '';
+}
+
+function setStartingCapital() {
+  const val = parseFloat(document.getElementById('startingCapital').value);
+  if (isNaN(val) || val <= 0) { alert('Please enter a valid starting balance.'); return; }
+  startingCapital = val;
+  localStorage.setItem('startingCapital', val);
+  document.getElementById('setupPanel').style.display = 'none';
+  refreshOpeningBalanceField();
+  render();
+}
+
+function addTrade() {
+  const date    = document.getElementById('tradeDate').value;
+  const coin    = document.getElementById('tradeCoin').value.trim().toUpperCase();
+  const openBal = parseFloat(document.getElementById('tradeOpenBal').value);
+  const dir     = document.getElementById('tradeDir').value;
+  const amount  = parseFloat(document.getElementById('tradeAmount').value);
+  const result  = parseFloat(document.getElementById('tradeResult').value);
+
+  if (!date || !coin || isNaN(openBal) || isNaN(amount) || isNaN(result)) {
+    alert('Please fill in all fields correctly.');
+    return;
+  }
+
+  trades.push({ date, coin, openBal, dir, amount, result, id: Date.now() });
+  save();
+  render();
+
+  document.getElementById('tradeCoin').value = '';
+  document.getElementById('tradeAmount').value = '';
+  document.getElementById('tradeResult').value = '';
+  refreshOpeningBalanceField();
+}
+
+function deleteTrade(id) {
+  trades = trades.filter(t => t.id !== id);
+  save();
+  render();
+  refreshOpeningBalanceField();
+}
+
+function clearAll() {
+  if (confirm('Clear all trade records? Your starting capital will be kept.')) {
+    trades = [];
+    save();
+    render();
+    refreshOpeningBalanceField();
+  }
+}
+
+function resetCapital() {
+  if (confirm('Reset starting capital? This will also clear all trades.')) {
+    trades = [];
+    startingCapital = 0;
+    localStorage.removeItem('startingCapital');
+    localStorage.removeItem('cryptoTrades');
+    document.getElementById('tradeOpenBal').value = '';
+    document.getElementById('setupPanel').style.display = 'block';
+    render();
+  }
+}
+
+function save() {
+  localStorage.setItem('cryptoTrades', JSON.stringify(trades));
+}
+
+function render() {
+  const tbody = document.getElementById('tradeBody');
+
+  if (!startingCapital) {
+    document.getElementById('setupPanel').style.display = 'block';
+  }
+
+  if (trades.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="11"><div class="empty-state"><div class="empty-icon">📊</div>No trades logged yet. Add your first trade above.</div></td></tr>`;
+    updateSummary([], 0, 0);
+    return;
+  }
+
+  const totalPL = trades.reduce((s, t) => s + t.result, 0);
+  const firstOpenBal = trades[0].openBal;
+
+  let rows = '';
+  trades.forEach((t, i) => {
+    const newBal     = t.openBal + t.result;
+    const isProfit   = t.result >= 0;
+    const pctTrade   = ((t.result / t.openBal) * 100);
+    const pctOfTotal = totalPL !== 0 ? ((t.result / Math.abs(totalPL)) * 100) : 0;
+    const resultClass = isProfit ? 'result-profit' : 'result-loss';
+    const resultIcon  = isProfit ? '▲' : '▼';
+    const resultLabel = isProfit ? 'PROFIT' : 'LOSS';
+    const dirClass    = t.dir === 'Buy' ? 'dir-buy' : 'dir-sell';
+    const pctClass    = pctTrade >= 0 ? 'pct-pos' : 'pct-neg';
+    const pctTotalCl  = pctOfTotal >= 0 ? 'pct-pos' : 'pct-neg';
+
+    rows += `<tr>
+      <td style="color:var(--text-dim)">${i + 1}</td>
+      <td>${t.date}</td>
+      <td><span class="coin-badge">${t.coin}</span></td>
+      <td>${fmt(t.openBal)}</td>
+      <td><span class="direction-badge ${dirClass}">${t.dir === 'Buy' ? '▲ BUY' : '▼ SELL'}</span></td>
+      <td>${fmt(t.amount)}</td>
+      <td><span class="result-cell ${resultClass}">${resultIcon} ${fmtSigned(t.result)} ${resultLabel}</span></td>
+      <td style="color:${isProfit ? 'var(--green)' : 'var(--red)'};font-weight:700">${fmt(newBal)}</td>
+      <td class="pct-cell ${pctClass}">${pctTrade >= 0 ? '+' : ''}${pctTrade.toFixed(2)}%</td>
+      <td class="pct-cell ${pctTotalCl}">${pctOfTotal >= 0 ? '+' : ''}${pctOfTotal.toFixed(1)}%</td>
+      <td><button class="delete-btn" onclick="deleteTrade(${t.id})">✕</button></td>
+    </tr>`;
+  });
+
+  tbody.innerHTML = rows;
+  updateSummary(trades, firstOpenBal, totalPL);
+}
+
+function updateSummary(trades, firstOpenBal, totalPL) {
+  const wins   = trades.filter(t => t.result > 0);
+  const losses = trades.filter(t => t.result < 0);
+  const totalProfit = wins.reduce((s, t) => s + t.result, 0);
+  const totalLoss   = losses.reduce((s, t) => s + t.result, 0);
+  const currentBal  = trades.length > 0 ? (trades[trades.length - 1].openBal + trades[trades.length - 1].result) : 0;
+  const winRate     = trades.length > 0 ? ((wins.length / trades.length) * 100).toFixed(0) : 0;
+  const baseBal     = startingCapital || firstOpenBal;
+  const netPctChange = baseBal > 0 ? ((totalPL / baseBal) * 100) : 0;
+
+  document.getElementById('summaryOpening').textContent  = baseBal ? fmt(baseBal) : '$0.00';
+  document.getElementById('summaryCurrent').textContent  = trades.length ? fmt(currentBal) : (startingCapital ? fmt(startingCapital) : '$0.00');
+  document.getElementById('summaryCurrent').className    = 'card-value ' + (currentBal >= baseBal ? 'green' : 'red');
+  document.getElementById('summaryProfit').textContent   = fmt(totalProfit);
+  document.getElementById('summaryLoss').textContent     = fmt(Math.abs(totalLoss));
+  document.getElementById('summaryWins').textContent     = `${wins.length} winning trade${wins.length !== 1 ? 's' : ''}`;
+  document.getElementById('summaryLosses').textContent   = `${losses.length} losing trade${losses.length !== 1 ? 's' : ''}`;
+  document.getElementById('summaryTrades').textContent   = trades.length;
+  document.getElementById('summaryWinRate').textContent  = trades.length ? `Win rate: ${winRate}%` : 'Win rate: —';
+
+  const netEl  = document.getElementById('summaryNet');
+  const pctEl  = document.getElementById('summaryPct');
+  netEl.textContent = trades.length ? fmtSigned(totalPL) : '$0.00';
+  netEl.className   = 'card-value ' + (totalPL >= 0 ? 'green' : 'red');
+  pctEl.textContent = trades.length ? `${netPctChange >= 0 ? '+' : ''}${netPctChange.toFixed(2)}% overall` : '0.00% overall';
+}
+
+// ═══════════════════════════════════════════════════════════
+//  PWA INSTALL PROMPT
+// ═══════════════════════════════════════════════════════════
+let deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  if (!localStorage.getItem('cj_install_dismissed')) {
+    document.getElementById('installBanner').classList.add('show');
+  }
+});
+
+document.getElementById('installBtn').addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  document.getElementById('installBanner').classList.remove('show');
+});
+
+function dismissInstall() {
+  localStorage.setItem('cj_install_dismissed', '1');
+  document.getElementById('installBanner').classList.remove('show');
+}
+
+// Register service worker for offline support
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+//  BOOT
+// ═══════════════════════════════════════════════════════════
+initLoginScreen();
+</script>
+</body>
+</html>
