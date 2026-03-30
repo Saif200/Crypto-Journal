@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crypto Trading Journal</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050a0f;
+    --panel: #0b1520;
+    --panel2: #0f1e2d;
+    --border: #1a3a5c;
+    --accent: #00d4ff;
+    --accent2: #0099cc;
+    --green: #00ff88;
+    --green-dim: #004422;
+    --red: #ff3355;
+    --red-dim: #440011;
+    --text: #c8dff0;
+    --text-dim: #5a8ab0;
+    --gold: #ffd700;
+    --mono: 'Share Tech Mono', monospace;
+    --sans: 'Rajdhani', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid BG */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 30px 20px;
+  }
+
+  /* Header */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .logo-icon {
+    width: 44px; height: 44px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    box-shadow: 0 0 20px rgba(0,212,255,0.3);
+  }
+
+  .logo-text {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #fff;
+    text-transform: uppercase;
+  }
+
+  .logo-sub {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 3px;
+  }
+
+  .header-date {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-dim);
+    text-align: right;
+  }
+
+  /* Summary Cards */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+  }
+
+  .card.green-card::before { background: linear-gradient(90deg, var(--green), transparent); }
+  .card.red-card::before { background: linear-gradient(90deg, var(--red), transparent); }
+  .card.gold-card::before { background: linear-gradient(90deg, var(--gold), transparent); }
+
+  .card-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .card-value {
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .card-value.green { color: var(--green); }
+  .card-value.red { color: var(--red); }
+  .card-value.gold { color: var(--gold); }
+
+  .card-sub {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+
+  /* Form Panel */
+  .form-panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px 24px;
+    margin-bottom: 28px;
+  }
+
+  .form-title {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 18px;
+    font-family: var(--mono);
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+    align-items: end;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  input, select {
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    padding: 9px 12px;
+    font-family: var(--mono);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+  }
+
+  input:focus, select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(0,212,255,0.1);
+  }
+
+  select option { background: var(--panel2); }
+
+  .btn-add {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #000;
+    border: none;
+    border-radius: 7px;
+    padding: 10px 22px;
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .btn-add:hover { opacity: 0.85; }
+  .btn-add:active { transform: scale(0.97); }
+
+  /* Table */
+  .table-panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .table-header-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .table-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  .btn-clear {
+    background: transparent;
+    border: 1px solid var(--red);
+    color: var(--red);
+    border-radius: 5px;
+    padding: 5px 14px;
+    font-family: var(--mono);
+    font-size: 11px;
+    cursor: pointer;
+    transition: background 0.2s;
+    letter-spacing: 1px;
+  }
+
+  .btn-clear:hover { background: var(--red-dim); }
+
+  .table-wrap {
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  thead th {
+    background: var(--panel2);
+    padding: 11px 14px;
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid rgba(26,58,92,0.5);
+    transition: background 0.15s;
+  }
+
+  tbody tr:hover { background: rgba(0,212,255,0.04); }
+  tbody tr:last-child { border-bottom: none; }
+
+  td {
+    padding: 12px 14px;
+    font-family: var(--mono);
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .coin-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .coin-badge {
+    background: rgba(0,212,255,0.1);
+    border: 1px solid rgba(0,212,255,0.2);
+    border-radius: 4px;
+    padding: 2px 7px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 1px;
+  }
+
+  .direction-badge {
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    display: inline-block;
+  }
+
+  .dir-buy {
+    background: var(--green-dim);
+    color: var(--green);
+    border: 1px solid rgba(0,255,136,0.3);
+  }
+
+  .dir-sell {
+    background: var(--red-dim);
+    color: var(--red);
+    border: 1px solid rgba(255,51,85,0.3);
+  }
+
+  .result-cell {
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .result-profit {
+    background: var(--green-dim);
+    color: var(--green);
+    border: 1px solid rgba(0,255,136,0.3);
+  }
+
+  .result-loss {
+    background: var(--red-dim);
+    color: var(--red);
+    border: 1px solid rgba(255,51,85,0.3);
+  }
+
+  .pct-cell {
+    font-weight: 700;
+  }
+
+  .pct-pos { color: var(--green); }
+  .pct-neg { color: var(--red); }
+
+  .delete-btn {
+    background: none;
+    border: 1px solid rgba(255,51,85,0.3);
+    color: var(--red);
+    border-radius: 4px;
+    padding: 3px 8px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background 0.2s;
+  }
+
+  .delete-btn:hover { background: var(--red-dim); }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 1px;
+  }
+
+  .empty-icon { font-size: 40px; margin-bottom: 16px; }
+
+  /* Glow pulse for profit */
+  @keyframes glow {
+    0%, 100% { box-shadow: 0 0 4px rgba(0,255,136,0.3); }
+    50% { box-shadow: 0 0 12px rgba(0,255,136,0.6); }
+  }
+
+  .result-profit { animation: glow 2.5s infinite; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--panel); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  @media (max-width: 600px) {
+    .form-grid { grid-template-columns: 1fr 1fr; }
+    header { flex-direction: column; gap: 12px; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- Header -->
+  <header>
+    <div class="logo">
+      <div class="logo-icon">₿</div>
+      <div>
+        <div class="logo-text">CryptoJournal</div>
+        <div class="logo-sub">Trade Tracker &amp; P&amp;L Monitor</div>
+      </div>
+    </div>
+    <div class="header-date" id="headerDate"></div>
+  </header>
+
+  <!-- Summary Cards -->
+  <div class="summary-grid">
+    <div class="card">
+      <div class="card-label">Opening Balance</div>
+      <div class="card-value gold" id="summaryOpening">$0.00</div>
+      <div class="card-sub">Initial capital</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Current Balance</div>
+      <div class="card-value" id="summaryCurrent">$0.00</div>
+      <div class="card-sub">After all trades</div>
+    </div>
+    <div class="card green-card">
+      <div class="card-label">Total Profit</div>
+      <div class="card-value green" id="summaryProfit">$0.00</div>
+      <div class="card-sub" id="summaryWins">0 winning trades</div>
+    </div>
+    <div class="card red-card">
+      <div class="card-label">Total Loss</div>
+      <div class="card-value red" id="summaryLoss">$0.00</div>
+      <div class="card-sub" id="summaryLosses">0 losing trades</div>
+    </div>
+    <div class="card gold-card">
+      <div class="card-label">Net P&amp;L</div>
+      <div class="card-value" id="summaryNet">$0.00</div>
+      <div class="card-sub" id="summaryPct">0.00% overall</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Total Trades</div>
+      <div class="card-value" id="summaryTrades">0</div>
+      <div class="card-sub" id="summaryWinRate">Win rate: —</div>
+    </div>
+  </div>
+
+  <!-- Starting Capital Setup (shown only when no trades exist) -->
+  <div class="form-panel" id="setupPanel" style="display:none; border-color: var(--gold);">
+    <div class="form-title" style="color:var(--gold)">// Set Starting Capital — One Time Only</div>
+    <div style="font-size:13px; color:var(--text-dim); margin-bottom:16px; font-family:var(--mono);">
+      Enter your initial trading balance. This carries forward automatically after every trade.
+    </div>
+    <div style="display:flex; gap:14px; align-items:flex-end; flex-wrap:wrap;">
+      <div class="field" style="min-width:220px;">
+        <label>Starting Balance ($)</label>
+        <input type="number" id="startingCapital" placeholder="e.g. 1000.00" min="0" step="0.01">
+      </div>
+      <button class="btn-add" style="background: linear-gradient(135deg, var(--gold), #cc9900); margin-bottom:0;" onclick="setStartingCapital()">✓ Set Capital</button>
+    </div>
+  </div>
+
+  <!-- Add Trade Form -->
+  <div class="form-panel" id="tradeFormPanel">
+    <div class="form-title">// Add New Trade</div>
+    <div class="form-grid">
+      <div class="field">
+        <label>Date</label>
+        <input type="date" id="tradeDate">
+      </div>
+      <div class="field">
+        <label>Coin Name</label>
+        <input type="text" id="tradeCoin" placeholder="e.g. BTC" maxlength="12">
+      </div>
+      <div class="field">
+        <label>Opening Balance ($)</label>
+        <input type="number" id="tradeOpenBal" readonly tabindex="-1"
+          style="background:rgba(0,212,255,0.05); border-color:var(--accent); color:var(--accent); cursor:not-allowed;">
+        <span style="font-family:var(--mono);font-size:9px;color:var(--text-dim);letter-spacing:1px;">↑ Auto-filled from last trade</span>
+      </div>
+      <div class="field">
+        <label>Direction</label>
+        <select id="tradeDir">
+          <option value="Buy">Buy (Long)</option>
+          <option value="Sell">Sell (Short)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Trade Amount ($)</label>
+        <input type="number" id="tradeAmount" placeholder="e.g. 200" min="0" step="0.01">
+      </div>
+      <div class="field">
+        <label>Result (+ Profit / - Loss)</label>
+        <input type="number" id="tradeResult" placeholder="e.g. 50 or -30" step="0.01">
+      </div>
+      <div class="field">
+        <button class="btn-add" onclick="addTrade()">+ Log Trade</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Trade Table -->
+  <div class="table-panel">
+    <div class="table-header-bar">
+      <div class="table-title">// Trade Log</div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn-clear" style="border-color:var(--gold);color:var(--gold);" onclick="resetCapital()">⟳ Reset Capital</button>
+        <button class="btn-clear" onclick="clearAll()">✕ Clear Trades</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Date</th>
+            <th>Coin</th>
+            <th>Opening Bal.</th>
+            <th>Direction</th>
+            <th>Trade Amount</th>
+            <th>Result</th>
+            <th>New Balance</th>
+            <th>% Gain/Loss</th>
+            <th>% of Total P&L</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="tradeBody">
+          <tr>
+            <td colspan="11">
+              <div class="empty-state">
+                <div class="empty-icon">📊</div>
+                No trades logged yet. Add your first trade above.
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let trades = JSON.parse(localStorage.getItem('cryptoTrades') || '[]');
+  let startingCapital = parseFloat(localStorage.getItem('startingCapital') || '0');
+
+  // Set today's date as default
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('tradeDate').value = today;
+
+  // Header date
+  document.getElementById('headerDate').innerHTML =
+    new Date().toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' }) +
+    '<br><span style="color:var(--accent)">LIVE TRACKER</span>';
+
+  function fmt(n) {
+    return '$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 });
+  }
+
+  function fmtSigned(n) {
+    return (n >= 0 ? '+$' : '-$') + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 });
+  }
+
+  function getCurrentOpeningBalance() {
+    if (trades.length === 0) return startingCapital;
+    const last = trades[trades.length - 1];
+    return last.openBal + last.result;
+  }
+
+  function refreshOpeningBalanceField() {
+    const bal = getCurrentOpeningBalance();
+    const field = document.getElementById('tradeOpenBal');
+    field.value = bal > 0 ? bal.toFixed(2) : '';
+  }
+
+  function setStartingCapital() {
+    const val = parseFloat(document.getElementById('startingCapital').value);
+    if (isNaN(val) || val <= 0) { alert('Please enter a valid starting balance.'); return; }
+    startingCapital = val;
+    localStorage.setItem('startingCapital', val);
+    document.getElementById('setupPanel').style.display = 'none';
+    refreshOpeningBalanceField();
+    render();
+  }
+
+  function addTrade() {
+    const date   = document.getElementById('tradeDate').value;
+    const coin   = document.getElementById('tradeCoin').value.trim().toUpperCase();
+    const openBal = parseFloat(document.getElementById('tradeOpenBal').value);
+    const dir    = document.getElementById('tradeDir').value;
+    const amount = parseFloat(document.getElementById('tradeAmount').value);
+    const result = parseFloat(document.getElementById('tradeResult').value);
+
+    if (!date || !coin || isNaN(openBal) || isNaN(amount) || isNaN(result)) {
+      alert('Please fill in all fields correctly.');
+      return;
+    }
+
+    trades.push({ date, coin, openBal, dir, amount, result, id: Date.now() });
+    save();
+    render();
+
+    document.getElementById('tradeCoin').value = '';
+    document.getElementById('tradeAmount').value = '';
+    document.getElementById('tradeResult').value = '';
+    refreshOpeningBalanceField();
+  }
+
+  function deleteTrade(id) {
+    trades = trades.filter(t => t.id !== id);
+    save();
+    render();
+    refreshOpeningBalanceField();
+  }
+
+  function clearAll() {
+    if (confirm('Clear all trade records? Your starting capital will be kept.')) {
+      trades = [];
+      save();
+      render();
+      refreshOpeningBalanceField();
+    }
+  }
+
+  function resetCapital() {
+    if (confirm('Reset starting capital? This will also clear all trades.')) {
+      trades = [];
+      startingCapital = 0;
+      localStorage.removeItem('startingCapital');
+      localStorage.removeItem('cryptoTrades');
+      document.getElementById('tradeOpenBal').value = '';
+      document.getElementById('setupPanel').style.display = 'block';
+      render();
+    }
+  }
+
+  function save() {
+    localStorage.setItem('cryptoTrades', JSON.stringify(trades));
+  }
+
+  function render() {
+    const tbody = document.getElementById('tradeBody');
+
+    // Show setup panel if no starting capital set
+    if (!startingCapital) {
+      document.getElementById('setupPanel').style.display = 'block';
+    }
+
+    if (trades.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="11"><div class="empty-state"><div class="empty-icon">📊</div>No trades logged yet. Add your first trade above.</div></td></tr>`;
+      updateSummary([], 0, 0);
+      return;
+    }
+
+    const totalPL = trades.reduce((s, t) => s + t.result, 0);
+    const firstOpenBal = trades[0].openBal;
+
+    let rows = '';
+    trades.forEach((t, i) => {
+      const newBal     = t.openBal + t.result;
+      const isProfit   = t.result >= 0;
+      const pctTrade   = ((t.result / t.openBal) * 100);
+      const pctOfTotal = totalPL !== 0 ? ((t.result / Math.abs(totalPL)) * 100) : 0;
+
+      const resultClass = isProfit ? 'result-profit' : 'result-loss';
+      const resultIcon  = isProfit ? '▲' : '▼';
+      const resultLabel = isProfit ? 'PROFIT' : 'LOSS';
+      const dirClass    = t.dir === 'Buy' ? 'dir-buy' : 'dir-sell';
+      const pctClass    = pctTrade >= 0 ? 'pct-pos' : 'pct-neg';
+      const pctTotalCl  = pctOfTotal >= 0 ? 'pct-pos' : 'pct-neg';
+
+      rows += `
+        <tr>
+          <td style="color:var(--text-dim)">${i + 1}</td>
+          <td>${t.date}</td>
+          <td><div class="coin-cell"><span class="coin-badge">${t.coin}</span></div></td>
+          <td>${fmt(t.openBal)}</td>
+          <td><span class="direction-badge ${dirClass}">${t.dir === 'Buy' ? '▲ BUY' : '▼ SELL'}</span></td>
+          <td>${fmt(t.amount)}</td>
+          <td><span class="result-cell ${resultClass}">${resultIcon} ${fmtSigned(t.result)} ${resultLabel}</span></td>
+          <td style="color:${isProfit ? 'var(--green)' : 'var(--red)'};font-weight:700">${fmt(newBal)}</td>
+          <td class="pct-cell ${pctClass}">${pctTrade >= 0 ? '+' : ''}${pctTrade.toFixed(2)}%</td>
+          <td class="pct-cell ${pctTotalCl}">${pctOfTotal >= 0 ? '+' : ''}${pctOfTotal.toFixed(1)}%</td>
+          <td><button class="delete-btn" onclick="deleteTrade(${t.id})">✕</button></td>
+        </tr>`;
+    });
+
+    tbody.innerHTML = rows;
+    updateSummary(trades, firstOpenBal, totalPL);
+  }
+
+  function updateSummary(trades, firstOpenBal, totalPL) {
+    const wins   = trades.filter(t => t.result > 0);
+    const losses = trades.filter(t => t.result < 0);
+    const totalProfit = wins.reduce((s, t) => s + t.result, 0);
+    const totalLoss   = losses.reduce((s, t) => s + t.result, 0);
+    const currentBal  = trades.length > 0 ? (trades[trades.length - 1].openBal + trades[trades.length - 1].result) : 0;
+    const winRate     = trades.length > 0 ? ((wins.length / trades.length) * 100).toFixed(0) : 0;
+    const baseBal     = startingCapital || firstOpenBal;
+    const netPctChange = baseBal > 0 ? ((totalPL / baseBal) * 100) : 0;
+
+    document.getElementById('summaryOpening').textContent  = baseBal ? fmt(baseBal) : '$0.00';
+    document.getElementById('summaryCurrent').textContent  = trades.length ? fmt(currentBal) : (startingCapital ? fmt(startingCapital) : '$0.00');
+    document.getElementById('summaryCurrent').className    = 'card-value ' + (currentBal >= baseBal ? 'green' : 'red');
+    document.getElementById('summaryProfit').textContent   = fmt(totalProfit);
+    document.getElementById('summaryLoss').textContent     = fmt(Math.abs(totalLoss));
+    document.getElementById('summaryWins').textContent     = `${wins.length} winning trade${wins.length !== 1 ? 's' : ''}`;
+    document.getElementById('summaryLosses').textContent   = `${losses.length} losing trade${losses.length !== 1 ? 's' : ''}`;
+    document.getElementById('summaryTrades').textContent   = trades.length;
+    document.getElementById('summaryWinRate').textContent  = trades.length ? `Win rate: ${winRate}%` : 'Win rate: —';
+
+    const netEl  = document.getElementById('summaryNet');
+    const pctEl  = document.getElementById('summaryPct');
+    netEl.textContent = trades.length ? fmtSigned(totalPL) : '$0.00';
+    netEl.className   = 'card-value ' + (totalPL >= 0 ? 'green' : 'red');
+    pctEl.textContent = trades.length ? `${netPctChange >= 0 ? '+' : ''}${netPctChange.toFixed(2)}% overall` : '0.00% overall';
+  }
+
+  // Init
+  if (!startingCapital) {
+    document.getElementById('setupPanel').style.display = 'block';
+  } else {
+    refreshOpeningBalanceField();
+  }
+  render();
+</script>
+</body>
+</html>
